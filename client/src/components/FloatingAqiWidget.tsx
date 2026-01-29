@@ -7,35 +7,36 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
+
+interface EnvironmentData {
+  aqi: number;
+  aqiStatus: string;
+  co2: number;
+  humidity: number;
+  temperature: number;
+  recommendation: string;
+  location: string;
+}
 
 export function FloatingAqiWidget() {
-  const [aqi, setAqi] = useState<number | null>(null);
-  const [status, setStatus] = useState<string>("Loading...");
-  const [color, setColor] = useState<string>("bg-gray-500");
-  const [co2, setCo2] = useState<number>(412);
-  const [humidity, setHumidity] = useState<number>(45);
+  const { data, isLoading } = useQuery<EnvironmentData>({
+    queryKey: ['/api/environment'],
+    refetchInterval: 300000,
+  });
 
-  useEffect(() => {
-    // Simulated data for the demonstration
-    const timer = setTimeout(() => {
-      const mockAqi = 42;
-      setAqi(mockAqi);
-      if (mockAqi <= 50) {
-        setStatus("Good");
-        setColor("bg-emerald-500");
-      } else if (mockAqi <= 100) {
-        setStatus("Moderate");
-        setColor("bg-yellow-500");
-      } else {
-        setStatus("Unhealthy");
-        setColor("bg-red-500");
-      }
-      setCo2(400 + Math.floor(Math.random() * 50));
-      setHumidity(40 + Math.floor(Math.random() * 20));
-    }, 1000);
+  const getAqiColor = (aqi: number) => {
+    if (aqi <= 50) return "bg-emerald-500";
+    if (aqi <= 100) return "bg-yellow-500";
+    if (aqi <= 150) return "bg-orange-500";
+    return "bg-red-500";
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  const aqi = data?.aqi ?? null;
+  const status = isLoading ? "Loading..." : (data?.aqiStatus || "Good");
+  const color = aqi ? getAqiColor(aqi) : "bg-gray-500";
+  const co2 = data?.co2 ?? 412;
+  const humidity = data?.humidity ?? 45;
 
   return (
     <div className="fixed top-6 right-6 z-[100] pointer-events-auto">
@@ -79,7 +80,7 @@ export function FloatingAqiWidget() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Info className="w-3 h-3 text-primary" />
-              <p className="text-xs">Real-time Environment Data</p>
+              <p className="text-xs">Real-time Environment Data (AI-powered)</p>
             </div>
             <p className="text-[10px] text-white/60">AQI: Air Quality Index</p>
             <p className="text-[10px] text-white/60">CO2: Carbon Dioxide Density</p>

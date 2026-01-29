@@ -5,7 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGarden } from "@/hooks/use-garden";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import forestImg from "@assets/681b154ea1cfb4dd2891b723_tmpr49wx9_r_1769716033818.jpeg";
+
+interface EnvironmentData {
+  aqi: number;
+  aqiStatus: string;
+  co2: number;
+  humidity: number;
+  temperature: number;
+  recommendation: string;
+  location: string;
+}
 
 const DAILY_TIPS = [
   "Switching off unused lights can reduce household electricity use by up to 10%.",
@@ -32,6 +43,11 @@ const DAILY_TIPS = [
 
 export default function Dashboard() {
   const { garden } = useGarden();
+  
+  const { data: envData, isLoading: envLoading } = useQuery<EnvironmentData>({
+    queryKey: ['/api/environment'],
+    refetchInterval: 300000,
+  });
   
   const dailyTip = useMemo(() => {
     return DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
@@ -84,20 +100,26 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 <div className="space-y-1">
                   <p className="text-xs text-white/40 uppercase tracking-wider font-bold">Air Quality Index</p>
-                  <p className="text-3xl font-display font-bold text-solar-glow">42 <span className="text-sm text-white/60">Good</span></p>
+                  <p className="text-3xl font-display font-bold text-solar-glow">
+                    {envLoading ? "--" : envData?.aqi ?? 42} <span className="text-sm text-white/60">{envLoading ? "Loading..." : envData?.aqiStatus ?? "Good"}</span>
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-white/40 uppercase tracking-wider font-bold">Estimated CO₂</p>
-                  <p className="text-3xl font-display font-bold text-white">412 <span className="text-sm text-white/60">ppm</span></p>
+                  <p className="text-3xl font-display font-bold text-white">
+                    {envLoading ? "--" : envData?.co2 ?? 412} <span className="text-sm text-white/60">ppm</span>
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-white/40 uppercase tracking-wider font-bold">Local Humidity</p>
-                  <p className="text-3xl font-display font-bold text-white">49%</p>
+                  <p className="text-3xl font-display font-bold text-white">
+                    {envLoading ? "--" : envData?.humidity ?? 49}%
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-6 border-t border-white/5">
                 <Info className="w-4 h-4 text-solar-glow" />
-                <p className="text-white/70">Conditions today are favorable for outdoor activity and solar generation.</p>
+                <p className="text-white/70">{envData?.recommendation || "Conditions today are favorable for outdoor activity and solar generation."}</p>
               </div>
             </CardContent>
           </Card>

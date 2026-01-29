@@ -93,8 +93,18 @@ export function Sidebar() {
 
   const handleZipSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (zipInput.trim()) {
+    if (zipInput.trim() && zipInput.trim().length === 6) {
       setZipCode(zipInput.trim());
+      queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
+    }
+  };
+
+  // Add auto-submit when zip code reaches 6 digits
+  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setZipInput(value);
+    if (value.length === 6) {
+      setZipCode(value);
       queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
     }
   };
@@ -213,14 +223,14 @@ export function Sidebar() {
                 type="text"
                 placeholder="Enter zip code"
                 value={zipInput}
-                onChange={(e) => setZipInput(e.target.value)}
+                onChange={handleZipChange}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm h-9"
                 data-testid="input-zip-code"
               />
               <Button 
                 type="submit" 
                 size="sm" 
-                className="bg-solar-glow/20 hover:bg-solar-glow/30 text-solar-glow border-none h-9"
+                className="bg-solar-glow/20 hover:bg-solar-glow/30 text-solar-glow border-none h-9 shrink-0"
                 data-testid="button-save-zip"
               >
                 Save

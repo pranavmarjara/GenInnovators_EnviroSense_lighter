@@ -32,7 +32,8 @@ export async function registerRoutes(
         "co2": <number in ppm, typically 400-450>,
         "humidity": <number percentage 0-100>,
         "temperature": <number in celsius>,
-        "recommendation": "<brief weather/environment recommendation for the day>"
+        "recommendation": "<brief weather/environment recommendation for the day>",
+        "address": "<a brief formatted address for this location, e.g. 'South Delhi, New Delhi, Delhi 110001'>"
       }
       
       Base values on typical conditions for that location and season. Return realistic values.`;
@@ -54,6 +55,7 @@ export async function registerRoutes(
           humidity: data.humidity || 49,
           temperature: data.temperature || 28,
           recommendation: data.recommendation || "Conditions are favorable for outdoor activity.",
+          address: data.address || `${location}`,
           location
         });
       } else {
@@ -64,6 +66,7 @@ export async function registerRoutes(
           humidity: 49,
           temperature: 28,
           recommendation: "Conditions are favorable for outdoor activity.",
+          address: location,
           location
         });
       }

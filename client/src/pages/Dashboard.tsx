@@ -17,6 +17,7 @@ interface EnvironmentData {
   temperature: number;
   recommendation: string;
   location: string;
+  address?: string;
 }
 
 const DAILY_TIPS = [
@@ -103,6 +104,12 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
+              <div className="mb-6">
+                <p className="text-sm text-white/60 mb-1">Your location</p>
+                <p className="text-xl font-display font-medium text-white">
+                  {envLoading ? "Loading address..." : envData?.address || location}
+                </p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 <div className="space-y-1">
                   <p className="text-xs text-white/40 uppercase tracking-wider font-bold">Air Quality Index</p>

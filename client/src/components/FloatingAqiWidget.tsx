@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wind, Info, Droplets, Gauge } from "lucide-react";
@@ -8,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
+import { useLocationContext } from "@/hooks/use-location-context";
 
 interface EnvironmentData {
   aqi: number;
@@ -20,8 +20,14 @@ interface EnvironmentData {
 }
 
 export function FloatingAqiWidget() {
+  const { location } = useLocationContext();
+  
   const { data, isLoading } = useQuery<EnvironmentData>({
-    queryKey: ['/api/environment'],
+    queryKey: ['/api/environment', location],
+    queryFn: async () => {
+      const res = await fetch(`/api/environment?location=${encodeURIComponent(location)}`);
+      return res.json();
+    },
     refetchInterval: 300000,
   });
 

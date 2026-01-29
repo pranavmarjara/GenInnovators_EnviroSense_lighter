@@ -15,6 +15,7 @@ import SolarCalculator from "@/pages/SolarCalculator";
 import GreenCredits from "@/pages/GreenCredits";
 import NotFound from "@/pages/NotFound";
 import { GardenProvider } from "@/hooks/use-garden";
+import { LocationProvider } from "@/hooks/use-location-context";
 import forestImg from "@assets/681b154ea1cfb4dd2891b723_tmpr49wx9_r_1769716033818.jpeg";
 
 function Router() {
@@ -49,8 +50,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <GardenProvider>
-          <SidebarProvider>
+        <LocationProvider>
+          <GardenProvider>
+            <SidebarProvider>
             <div className="flex min-h-screen bg-black text-white font-body selection:bg-primary/20 overflow-x-hidden relative">
               {/* Global Background Layer */}
               <div 
@@ -68,8 +70,9 @@ export default function App() {
               <Sidebar />
               <MainContent />
             </div>
-          </SidebarProvider>
-        </GardenProvider>
+            </SidebarProvider>
+          </GardenProvider>
+        </LocationProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

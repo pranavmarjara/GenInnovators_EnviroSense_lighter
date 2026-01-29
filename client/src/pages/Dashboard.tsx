@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useGarden } from "@/hooks/use-garden";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocationContext } from "@/hooks/use-location-context";
 import forestImg from "@assets/681b154ea1cfb4dd2891b723_tmpr49wx9_r_1769716033818.jpeg";
 
 interface EnvironmentData {
@@ -43,9 +44,14 @@ const DAILY_TIPS = [
 
 export default function Dashboard() {
   const { garden } = useGarden();
+  const { location } = useLocationContext();
   
   const { data: envData, isLoading: envLoading } = useQuery<EnvironmentData>({
-    queryKey: ['/api/environment'],
+    queryKey: ['/api/environment', location],
+    queryFn: async () => {
+      const res = await fetch(`/api/environment?location=${encodeURIComponent(location)}`);
+      return res.json();
+    },
     refetchInterval: 300000,
   });
   

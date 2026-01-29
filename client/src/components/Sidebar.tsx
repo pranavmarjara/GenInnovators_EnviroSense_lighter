@@ -7,11 +7,13 @@ import {
   Search,
   Sprout,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  MapPin
 } from "lucide-react";
 import { useState, useMemo, createContext, useContext } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +21,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useLocationContext } from "@/hooks/use-location-context";
+import { queryClient } from "@/lib/queryClient";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -80,10 +84,20 @@ export function Sidebar() {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const { collapsed, setCollapsed } = useSidebar();
+  const { zipCode, setZipCode } = useLocationContext();
+  const [zipInput, setZipInput] = useState(zipCode);
 
   const dailyTip = useMemo(() => {
     return DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
   }, []);
+
+  const handleZipSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (zipInput.trim()) {
+      setZipCode(zipInput.trim());
+      queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
+    }
+  };
 
   const NavContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
     <div className="flex flex-col h-full py-6 bg-[#030806] border-r border-white/5">
@@ -189,7 +203,33 @@ export function Sidebar() {
       </nav>
 
       {!isCollapsed && (
-        <div className="px-6 pt-6 border-t border-white/5 mt-auto">
+        <div className="px-6 pt-4 border-t border-white/5 mt-auto space-y-4">
+          <form onSubmit={handleZipSubmit} className="space-y-2">
+            <label className="text-xs text-white/50 uppercase tracking-wider font-bold flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> Your Zip Code
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter zip code"
+                value={zipInput}
+                onChange={(e) => setZipInput(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm h-9"
+                data-testid="input-zip-code"
+              />
+              <Button 
+                type="submit" 
+                size="sm" 
+                className="bg-solar-glow/20 hover:bg-solar-glow/30 text-solar-glow border-none h-9"
+                data-testid="button-save-zip"
+              >
+                Save
+              </Button>
+            </div>
+            {zipCode && (
+              <p className="text-[10px] text-white/40">Current: ZIP {zipCode}</p>
+            )}
+          </form>
           <div className="relative group overflow-hidden rounded-2xl p-4 transition-all duration-500 hover:scale-[1.02] solar-card solar-gradient-border">
              <div className="absolute inset-0 bg-gradient-to-br from-solar-glow/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
              <div className="relative z-10">

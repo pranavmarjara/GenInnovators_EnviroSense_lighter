@@ -181,8 +181,8 @@ export function Sidebar() {
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
-              <item.icon className={cn("w-5 h-5 z-10 transition-colors", isActive ? "text-solar-glow drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" : "text-white/40 group-hover:text-solar-glow")} />
-              {!isCollapsed && <span className="font-medium z-10">{item.label}</span>}
+              <item.icon className={cn("w-5 h-5 z-10 transition-colors", isActive ? "text-solar-glow drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" : "text-white/40 group-hover:text-solar-glow", item.label === "Green Credits" && "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]")} />
+              {!isCollapsed && <span className={cn("font-medium z-10", item.label === "Green Credits" && "gold-shimmer")}>{item.label}</span>}
             </Link>
           );
         })}

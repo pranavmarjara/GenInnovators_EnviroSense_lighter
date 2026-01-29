@@ -50,6 +50,31 @@
   .solar-card {
     @apply bg-[hsl(var(--solar-card-bg))] border border-white/10 rounded-3xl overflow-hidden relative shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)];
   }
+
+  .gold-shimmer {
+    background: linear-gradient(
+      90deg,
+      #9ca3af 0%,
+      #fbbf24 25%,
+      #fcd34d 50%,
+      #fbbf24 75%,
+      #9ca3af 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
   
   .solar-glow-text {
     @apply text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)];

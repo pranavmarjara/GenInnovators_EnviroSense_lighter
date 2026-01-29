@@ -68,7 +68,7 @@ Preferred communication style: Simple, everyday language.
 - **@hookform/resolvers**: Zod resolver for form validation
 
 ### UI Components (Radix UI)
-- Dialog, Dropdown Menu, Select, Tabs, Toast, Tooltip, and many more accessible primitives
+- Collapsible, Dialog, Label, Popover, Select, Separator, Slider, Toast, Toggle, Tooltip
 
 ### Build & Development
 - **Vite**: Frontend build tool and dev server

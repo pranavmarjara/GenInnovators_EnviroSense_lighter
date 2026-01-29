@@ -33,7 +33,7 @@ export async function registerRoutes(
         "humidity": <number percentage 0-100>,
         "temperature": <number in celsius>,
         "recommendation": "<brief weather/environment recommendation for the day>",
-        "address": "<a brief formatted address for this location, e.g. 'South Delhi, New Delhi, Delhi 110001'>"
+        "address": "<a brief formatted address string. If the location is a 6-digit number like '160015', translate it to its corresponding area in Chandigarh, e.g. 'Sector 15, Chandigarh, 160015'>"
       }
       
       Base values on typical conditions for that location and season. Return realistic values.`;

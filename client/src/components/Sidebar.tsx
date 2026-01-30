@@ -372,7 +372,7 @@ export function Sidebar() {
                 />
               )}
               <item.icon className={cn("w-5 h-5 z-10 transition-colors", isActive ? "text-solar-glow drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" : "text-white/40 group-hover:text-solar-glow", item.label === "Green Credits" && "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]")} />
-              {!isCollapsed && <span className={cn("font-medium z-10", item.label === "Green Credits" && "gold-shimmer")}>{item.label}</span>}
+              {!isCollapsed && <span className={cn("font-medium z-10", item.label === "Green Credits" && "text-amber-400")}>{item.label}</span>}
             </Link>
           );
         })}

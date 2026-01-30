@@ -1,0 +1,69 @@
+Prepare this project to be Netlify-ready up to static deployment preparation (Step 3), while securely enabling Gemini chatbot support via a user-provided API key.
+
+This prompt must STOP after Netlify readiness and Gemini key setup. Do NOT deploy or refactor further.
+
+GOALS:
+1. The app must build as a static frontend.
+2. The Gemini chatbot must be supported.
+3. The Gemini API key must be securely requested from me and stored using Replit’s secrets/environment system.
+4. The app must NOT break if the Gemini key is missing.
+
+TASKS:
+
+1. Static Frontend Readiness (Netlify Step 1–3)
+- Ensure `npm run build` generates a static `dist` directory.
+- Ensure the frontend does NOT depend on `server/index.ts` at runtime.
+- The backend server must NOT be required for production.
+- Any backend-dependent features must fail gracefully.
+
+2. SPA Routing Support (MANDATORY)
+- Add support for client-side routing on Netlify.
+- Create ONE of the following:
+  a) `public/_redirects` with `/* /index.html 200`
+  OR
+  b) `netlify.toml` with an SPA redirect rule.
+
+3. Environment Variable Safety
+- Audit all environment variable usage.
+- Guard access so missing environment variables do NOT crash the app.
+- Use defensive checks before reading env values.
+
+4. Gemini API Integration (CRITICAL)
+- Integrate Gemini chatbot support using an environment variable named `GEMINI_API_KEY`.
+- The Gemini API key must NOT be hardcoded.
+- The key must NOT be exposed in frontend bundles.
+
+5. Ask User for Gemini API Key
+- Prompt me to enter my Gemini API key.
+- Store the key securely using Replit Secrets / environment variables.
+- Confirm that the key is stored as `GEMINI_API_KEY`.
+
+6. Gemini Availability Handling
+- Before initializing Gemini, check whether `GEMINI_API_KEY` exists.
+- If the key exists:
+  - Enable full Gemini chatbot functionality.
+- If the key is missing:
+  - Do NOT crash the app.
+  - Show a clear chatbot UI message:
+    “Poke Enviro is unavailable until a Gemini API key is configured.”
+
+7. Local & Netlify Compatibility
+- The app must run locally with or without the Gemini key.
+- The app must deploy on Netlify without requiring the Gemini key at build time.
+- Gemini should activate only at runtime when the key is present.
+
+RESTRICTIONS:
+- Do NOT deploy the backend.
+- Do NOT refactor UI or features.
+- Do NOT expose secrets to client-side code.
+- Do NOT proceed beyond Netlify Step 3.
+
+VERIFICATION CHECKLIST:
+- `npm run build` succeeds.
+- `dist/` directory exists.
+- App loads without backend.
+- SPA refresh works.
+- Gemini works when key is present.
+- App does not crash when key is missing.
+
+STOP AFTER COMPLETING THESE TASKS.

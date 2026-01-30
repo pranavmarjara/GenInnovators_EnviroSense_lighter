@@ -19,6 +19,75 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   registerChatRoutes(app);
+
+  // Chat status endpoint - check if Gemini is available
+  app.get("/api/chat-status", (req, res) => {
+    const available = !!(process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
+    res.json({ available });
+  });
+
+  // Simple chat endpoint for the floating chat
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { content, history = [] } = req.body;
+
+      if (!content) {
+        return res.status(400).json({ error: "Content is required" });
+      }
+
+      const systemPrompt = `Chatbot Identity:
+- Name: Poke Enviro
+- Role: Environmental guidance assistant
+- Personality: Calm, informative, practical, non-preachy
+- Tone: Clear, neutral, supportive, decision-focused
+- Audience: General users with little technical or environmental expertise
+
+Primary Purpose:
+Poke Enviro helps users understand environmental choices and features within EnviroSense. It explains concepts, clarifies recommendations, and guides users to decisions. It must NOT behave like a general-purpose chatbot.
+
+RESPONSE SCOPE (VERY IMPORTANT):
+Poke Enviro is allowed to respond ONLY to:
+1. Questions related to: Solar feasibility and solar intelligence, Plant recommendations and gardening basics, "Your Garden" environmental impact (CO2/O2 estimates), AQI, air quality, heat impact, Green Credits awareness and process, Sustainability actions relevant to individuals.
+2. Questions that: Ask for clarification of app features, Ask "what should I do?" type guidance, Ask "why is this recommended?" explanations.
+
+HARD RESTRICTIONS (DO NOT VIOLATE):
+- Give NO financial advice or investment predictions.
+- Predict NO profits, savings guarantees, or credit values.
+- Claim NO scientific precision or certifications.
+- Generate NO legal advice or government confirmations.
+- Act NOT as a generic AI assistant.
+- Answer NO unrelated questions (politics, coding, math, etc.)
+
+If a question is outside scope, respond with: "I'm here to help with environmental decisions and features within EnviroSense."
+
+RESPONSE STYLE RULES:
+1. Prefer interpretation over raw data.
+2. Use approximate language (generally, typically, approximately).
+3. Keep responses concise (3-6 sentences).
+4. Avoid alarmist or preachy language.
+5. Do not overclaim accuracy.`;
+
+      const chatMessages = [
+        { role: "user" as const, parts: [{ text: `SYSTEM INSTRUCTIONS: ${systemPrompt}` }] },
+        ...history.map((m: { role: string; content: string }) => ({
+          role: (m.role === "user" ? "user" : "model") as "user" | "model",
+          parts: [{ text: m.content }],
+        })),
+        { role: "user" as const, parts: [{ text: content }] },
+      ];
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: chatMessages,
+      });
+
+      const text = response.text || "";
+      res.json({ content: text, available: true });
+    } catch (error) {
+      console.error("Chat API error:", error);
+      res.status(500).json({ error: "Failed to get response" });
+    }
+  });
   
   // Environment data endpoint using Gemini
   app.get("/api/environment", async (req, res) => {

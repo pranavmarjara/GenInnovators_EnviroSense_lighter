@@ -11,7 +11,7 @@ import {
   MapPin,
   MessageSquare
 } from "lucide-react";
-import { useState, useMemo, createContext, useContext, useEffect, useRef } from "react";
+import { useState, useMemo, createContext, useContext, useEffect, useRef, useCallback, memo } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -204,35 +204,72 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const ZipCodeInput = memo(function ZipCodeInput({ 
+  currentZipCode, 
+  onSave 
+}: { 
+  currentZipCode: string; 
+  onSave: (zip: string) => void;
+}) {
+  const [localZipInput, setLocalZipInput] = useState(currentZipCode);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setLocalZipInput(value);
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (localZipInput.trim() && localZipInput.trim().length === 6) {
+      onSave(localZipInput.trim());
+    }
+  }, [localZipInput, onSave]);
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <label className="text-xs text-white/50 uppercase tracking-wider font-bold flex items-center gap-1">
+        <MapPin className="w-3 h-3" /> Your Zip Code
+      </label>
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          placeholder="Enter zip code"
+          value={localZipInput}
+          onChange={handleChange}
+          className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm h-9"
+          data-testid="input-zip-code"
+        />
+        <Button 
+          type="submit" 
+          size="sm" 
+          className="bg-solar-glow/20 hover:bg-solar-glow/30 text-solar-glow border-none h-9 shrink-0"
+          data-testid="button-save-zip"
+        >
+          Save
+        </Button>
+      </div>
+      {currentZipCode && (
+        <p className="text-[10px] text-white/40">Current: ZIP {currentZipCode}</p>
+      )}
+    </form>
+  );
+});
+
 
 export function Sidebar() {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const { collapsed, setCollapsed } = useSidebar();
   const { zipCode, setZipCode } = useLocationContext();
-  const [zipInput, setZipInput] = useState(zipCode);
 
   const dailyTip = useMemo(() => {
     return DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
   }, []);
 
-  const handleZipSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (zipInput.trim() && zipInput.trim().length === 6) {
-      setZipCode(zipInput.trim());
-      queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
-    }
-  };
-
-  // Add auto-submit when zip code reaches 6 digits
-  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setZipInput(value);
-    if (value.length === 6) {
-      setZipCode(value);
-      queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
-    }
-  };
+  const handleZipSave = useCallback((zip: string) => {
+    setZipCode(zip);
+    queryClient.invalidateQueries({ queryKey: ['/api/environment'] });
+  }, [setZipCode]);
 
   const NavContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
     <div className="flex flex-col h-full py-6 bg-[#030806] border-r border-white/5">
@@ -343,32 +380,7 @@ export function Sidebar() {
 
       {!isCollapsed && (
         <div className="px-6 pt-4 border-t border-white/5 mt-auto space-y-4">
-          <form onSubmit={handleZipSubmit} className="space-y-2">
-            <label className="text-xs text-white/50 uppercase tracking-wider font-bold flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> Your Zip Code
-            </label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Enter zip code"
-                value={zipInput}
-                onChange={handleZipChange}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm h-9"
-                data-testid="input-zip-code"
-              />
-              <Button 
-                type="submit" 
-                size="sm" 
-                className="bg-solar-glow/20 hover:bg-solar-glow/30 text-solar-glow border-none h-9 shrink-0"
-                data-testid="button-save-zip"
-              >
-                Save
-              </Button>
-            </div>
-            {zipCode && (
-              <p className="text-[10px] text-white/40">Current: ZIP {zipCode}</p>
-            )}
-          </form>
+          <ZipCodeInput currentZipCode={zipCode} onSave={handleZipSave} />
           <div className="relative group overflow-hidden rounded-2xl p-4 transition-all duration-500 hover:scale-[1.02] solar-card solar-gradient-border">
              <div className="absolute inset-0 bg-gradient-to-br from-solar-glow/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
              <div className="relative z-10">

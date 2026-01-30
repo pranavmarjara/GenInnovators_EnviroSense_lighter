@@ -147,14 +147,14 @@ export function FloatingChat() {
       )}
       <Button
         size="icon"
-        className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2 text-primary-foreground border border-primary-border h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 hover:bg-primary/90 bg-[#303139]"
+        className="relative overflow-hidden inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary-foreground border border-white/20 h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95 bg-gradient-to-br from-[#e8e8e8] via-[#f5f5f5] to-[#d4d4d4] before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent before:-translate-x-full before:animate-[shimmer_2s_infinite] before:rounded-full"
         onClick={() => setIsOpen(!isOpen)}
         data-testid="button-floating-chat"
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-6 w-6 text-gray-700" />
         ) : (
-          <MessageCircle className="h-6 w-6 text-white" />
+          <MessageCircle className="h-6 w-6 text-gray-700" />
         )}
       </Button>
     </div>

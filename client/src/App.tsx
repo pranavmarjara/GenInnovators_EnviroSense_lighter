@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar, SidebarProvider, useSidebar } from "@/components/Sidebar";
 import { FloatingAqiWidget } from "@/components/FloatingAqiWidget";
+import { FloatingChat } from "@/components/FloatingChat";
 import { cn } from "@/lib/utils";
 
 // Pages
@@ -67,6 +68,7 @@ export default function App() {
               </div>
               
               <FloatingAqiWidget />
+              <FloatingChat />
               <Sidebar />
               <MainContent />
             </div>

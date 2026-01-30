@@ -4,6 +4,25 @@ import { z } from "zod";
 
 // We will mostly use in-memory mock data, but defining schemas ensures type safety
 
+// === Chat Data ===
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+});
+
+export const insertConversationSchema = createInsertSchema(conversations);
+export const insertMessageSchema = createInsertSchema(messages);
+
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+
 // === AQI Data ===
 export const aqiData = pgTable("aqi_data", {
   id: serial("id").primaryKey(),

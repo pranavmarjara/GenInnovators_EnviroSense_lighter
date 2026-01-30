@@ -1,4 +1,3 @@
-import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, 
   Leaf, 
@@ -8,9 +7,10 @@ import {
   Sprout,
   ChevronDown,
   ShieldCheck,
-  MapPin
+  MapPin,
+  MessageSquare
 } from "lucide-react";
-import { useState, useMemo, createContext, useContext } from "react";
+import { useState, useMemo, createContext, useContext, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useLocationContext } from "@/hooks/use-location-context";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -36,7 +37,129 @@ const NAV_ITEMS = [
   },
   { href: "/solar", label: "Solar Calc", icon: SunMedium },
   { href: "/green-credits", label: "Green Credits", icon: ShieldCheck },
+  { href: "#chat", label: "Poke Enviro", icon: MessageSquare },
 ];
+
+function PokeEnviroChat() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: conversation } = useQuery({
+    queryKey: ["/api/conversations"],
+    select: (data: any[]) => data[0],
+  });
+
+  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+    queryKey: ["/api/conversations", conversation?.id, "messages"],
+    queryFn: async () => {
+      if (!conversation?.id) return [];
+      const res = await fetch(`/api/conversations/${conversation.id}`);
+      const data = await res.json();
+      return data.messages || [];
+    },
+    enabled: !!conversation?.id,
+  });
+
+  const createConversation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/conversations", { title: "Poke Enviro Chat" });
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/conversations"] }),
+  });
+
+  const sendMessage = useMutation({
+    mutationFn: async (content: string) => {
+      let convId = conversation?.id;
+      if (!convId) {
+        const newConv = await createConversation.mutateAsync();
+        convId = newConv.id;
+      }
+      return apiRequest("POST", `/api/conversations/${convId}/messages`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", conversation?.id, "messages"] });
+    },
+  });
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || sendMessage.isPending) return;
+    const msg = input.trim();
+    setInput("");
+    sendMessage.mutate(msg);
+  };
+
+  return (
+    <div className="relative">
+      <Button
+        variant="ghost"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "w-full justify-start items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group overflow-hidden h-auto",
+          isOpen ? "text-white bg-white/5" : "text-white/40 hover:text-white"
+        )}
+      >
+        <MessageSquare className={cn("w-5 h-5 transition-colors", isOpen ? "text-solar-glow" : "text-white/40 group-hover:text-solar-glow")} />
+        <span className="font-medium">Poke Enviro</span>
+      </Button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute left-full ml-4 bottom-0 w-80 h-96 bg-[#030806] border border-white/10 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"
+          >
+            <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
+              <span className="font-bold text-solar-glow">Poke Enviro</span>
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setIsOpen(false)}>×</Button>
+            </div>
+            
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.length === 0 && !messagesLoading && (
+                <p className="text-white/40 text-center text-xs italic">Ask me anything about the environment!</p>
+              )}
+              {messages.map((m: any, i: number) => (
+                <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                  <div className={cn(
+                    "max-w-[80%] p-3 rounded-2xl text-sm",
+                    m.role === "user" ? "bg-solar-glow/20 text-white rounded-tr-none" : "bg-white/5 text-white/80 rounded-tl-none"
+                  )}>
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+              {sendMessage.isPending && (
+                <div className="flex justify-start italic text-white/40 text-xs">Thinking...</div>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-4 border-t border-white/10 flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type a message..."
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-9"
+              />
+              <Button type="submit" size="sm" className="bg-solar-glow text-black hover:bg-solar-glow/80 h-9">
+                Send
+              </Button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const DAILY_TIPS = [
   "Switching off unused lights can reduce household electricity use by up to 10%.",
@@ -79,6 +202,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     </SidebarContext.Provider>
   );
 }
+
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -186,6 +310,10 @@ export function Sidebar() {
                 </CollapsibleContent>
               </Collapsible>
             );
+          }
+
+          if (item.label === "Poke Enviro") {
+            return <PokeEnviroChat key={item.label} />;
           }
 
           const isActive = location === item.href;
